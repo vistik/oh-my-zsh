@@ -2,7 +2,7 @@
 function git_prompt_info() {
   ref=$(command git symbolic-ref HEAD 2> /dev/null) || \
   ref=$(command git rev-parse --short HEAD 2> /dev/null) || return
-  echo "$ZSH_THEME_GIT_PROMPT_PREFIX${ref#refs/heads/}$(parse_git_dirty)$ZSH_THEME_GIT_PROMPT_SUFFIX"
+  echo "$ZSH_THEME_GIT_PROMPT_PREFIX${ref#refs/heads/}$(git_remote_status)$(parse_git_dirty)$ZSH_THEME_GIT_PROMPT_SUFFIX"
 }
 
 
@@ -21,10 +21,16 @@ parse_git_dirty() {
         GIT_STATUS=$(command git status -s ${SUBMODULE_SYNTAX} 2> /dev/null | tail -n1)
     fi
     if [[ -n $GIT_STATUS ]]; then
-      echo "$ZSH_THEME_GIT_PROMPT_DIRTY"
+      echo -n "$ZSH_THEME_GIT_PROMPT_DIRTY"
     else
-      echo "$ZSH_THEME_GIT_PROMPT_CLEAN"
+      echo -n "$ZSH_THEME_GIT_PROMPT_CLEAN"
     fi
+
+    # Hack by Visti Kløft to check dirty repo
+    if [[ $(echo ${GIT_STATUS} | grep -c "??") > 0 ]]; then
+      echo -n "$ZSH_THEME_GIT_PROMPT_UNTRACKED"
+    fi 
+
   else
     echo "$ZSH_THEME_GIT_PROMPT_CLEAN"
   fi
